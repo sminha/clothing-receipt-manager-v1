@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Hahmlet:wght@100..900&family=IBM+Plex+Sans+KR&display=swap');
+
+body, html {
+  display: flex; /* 부모 요소를 flexbox로 설정 */
+  justify-content: center; /* 자식 요소의 수평 정렬 지정 (가운데 정렬) */
+  align-items: center; /* 자식 요소의 수직 정렬 지정 (가운데 정렬) */
+
+  width: 1490px;
+  height: 100%;
+  margin: 0;
+  
+  font-family: 'Hahmlet';
+}
+
+#container {
+  width: 300px;
+}
+
+#img {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  height: 130px;
+}
+
+#logo {
+  width: 100px;
+  padding-bottom: 30px;
+}
+
+#form {
+  display: flex;
+  flex-direction: column; 
+  justify-content: space-evenly; 
+  align-items: center;
+
+  height: 260px; 
+}
+
+.login #form {
+  height: 170px;
+}
+
+#form input, #form button {
+  width: 300px; 
+  height: 35px;
+  /* padding: 10px; */
+  box-sizing: border-box; 
+}
+
+#form input {
+  border: 2px solid #c1c1c1;
+  /* padding: 5px; */
+}
+
+#form input:focus {
+  outline: none;
+}
+
+#form input::placeholder {
+  font-family: 'Hahmlet';
+  font-size: 0.9rem;
+  color: #c1c1c1;
+  
+  padding-left: 5px;
+}
+
+#form button {
+  font-family: 'Hahmlet';
+  font-size: 0.9rem;
+  color: white;
+
+  border: #85d4d4;
+  background-color: #85d4d4;
+}
+
+#form a {
+  display: block; /* a는 inline 요소로, margin-top 요소 적용하기 위해 display 변경 */
+
+  margin-top: 10px;
+
+  text-decoration: none;
+  font-size: 0.9rem;
+  color: #c1c1c1;
+}
+
+#form a:hover {
+  color: #acacac;
+}
