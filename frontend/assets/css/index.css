@@ -1,0 +1,154 @@
+@import url('https://fonts.googleapis.com/css2?family=Hahmlet:wght@100..900&family=IBM+Plex+Sans+KR&display=swap');
+
+body, html {
+  display: flex; /* 부모 요소를 flexbox로 설정 */
+  justify-content: center; /* 자식 요소의 수평 정렬 지정 (가운데 정렬) */
+  align-items: center; /* 자식 요소의 수직 정렬 지정 (가운데 정렬) */
+
+  width: 1490px;
+  height: 100%;
+  margin: 0;
+  
+  font-family: 'Hahmlet';
+}
+
+#container {
+  display: flex;
+  justify-content: flex-start; /* 자식 요소의 수평 정렬 지정 (왼쪽 정렬) */
+  align-items: center; 
+
+  width: 1000px;
+  height: 200px;
+}
+
+#img {
+  width: 400px;
+  height: 200px;
+}
+
+#logo {
+  width: 200px;
+  height: 200px;
+  padding-left: 200px;
+}
+
+#text {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly; /* 자식 요소의 수직 정렬 지정 (간격 균일) */
+
+  width: 600px;
+  height: 200px;
+  padding-left: 20px;
+}
+
+#service-name {
+  font-size: 1.5rem;
+}
+
+#service-description {
+  line-height: 1.5;
+}
+
+#auth-links a, #auth-links span {
+  text-decoration: none;
+  color: #85d4d4;
+}
+
+#auth-links a:hover {
+  color: #83b4b4;
+}
+
+#img1, #img2, #img3, #img4, #img5, #img6, #img7, #img8, #img9, #img10, #img11, #img12, #img13 {
+  position: absolute;
+}
+
+#img1 {
+  top: 50px;
+  left: 50px;
+
+  width: 60px;
+}
+
+#img2 {
+  top: 180px;
+  left: 180px;
+
+  width: 70px;
+}
+
+#img3 {
+  top: 70px;
+  left: 400px;
+
+  width: 90px;
+}
+
+#img4 {
+  top: 130px;
+
+  width: 80px;
+}
+
+#img5 {
+  top: 160px;
+  left: 820px;
+
+  width: 90px;
+}
+
+#img6 {
+  top: 60px;
+  left: 1000px;
+
+  width: 60px;
+}
+
+#img7 {
+  top: 100px;
+  left: 1200px;
+
+  width: 80px;
+}
+
+#img8 {
+  top: 460px;
+  left: 90px;
+
+  width: 100px;
+}
+
+#img9 {
+  top: 600px;
+  left: 430px;
+
+  width: 80px;
+}
+
+#img10 {
+  top: 530px;
+  left: 690px;
+
+  width: 70px;
+}
+
+#img11 {
+  top: 560px;
+  left: 930px;
+
+  width: 80px;
+}
+
+#img12 {
+  top: 420px;
+  left: 1100px;
+
+  width: 100px;
+}
+
+#img13 {
+  top: 600px;
+  left: 1350px;
+
+  width: 80px;
+}
