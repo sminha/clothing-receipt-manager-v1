@@ -72,7 +72,7 @@ body, html {
 
 #img2 {
   top: 180px;
-  left: 180px;
+  left: 200px;
 
   width: 70px;
 }
@@ -92,21 +92,21 @@ body, html {
 
 #img5 {
   top: 160px;
-  left: 820px;
+  left: 930px;
 
   width: 90px;
 }
 
 #img6 {
   top: 60px;
-  left: 1000px;
+  left: 1150px;
 
   width: 60px;
 }
 
 #img7 {
   top: 100px;
-  left: 1200px;
+  left: 1350px;
 
   width: 80px;
 }
@@ -148,7 +148,7 @@ body, html {
 
 #img13 {
   top: 600px;
-  left: 1350px;
+  left: 1270px;
 
   width: 80px;
 }
