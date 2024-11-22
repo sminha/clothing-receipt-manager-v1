@@ -55,4 +55,39 @@ app.post('/api/signup', async (req, res) => {
   }
 })
 
+app.post('/api/login', async (req, res) => {
+  const { id, password } = req.body
+
+  if (!id || !password) {
+    return res.status(400).json({ message: '입력되지 않은 필드가 존재합니다.' })
+  }
+
+  try {
+    const query = 'SELECT * FROM users WHERE user_name = ?'
+    const [results] = await db.promise().query(query, [id])
+
+    if (results.length === 0) {
+      return res.status(401).json({ message: '아이디 또는 비밀번호가 존재하지 않습니다.' })
+    }
+
+    const user = results[0]
+    const isMatch = await bcrypt.compare(password, user.password)
+
+    if (!isMatch) {
+      return res.status(401).json({ message: '아이디 또는 비밀번호가 존재하지 않습니다.' })
+    }
+
+    const token = jwt.sign({ id: user.id, name: user.name }, process.env.SECRET_KEY, { expiresIn: '1h' }) 
+
+    res.status(200).json({
+      message: '로그인이 완료되었습니다.',
+      token,  
+    })
+
+  } catch (err) {
+    console.error('Failed to login:', err)
+    res.status(500).json({ message: '로그인에 실패하였습니다.' })
+  }
+})
+
 app.listen(port, () => console.log(`Server is running on port ${port}`))
