@@ -90,4 +90,30 @@ app.post('/api/login', async (req, res) => {
   }
 })
 
+const tokenBlacklist = new Set()
+
+app.post('/api/logout', async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization']
+    const token = authHeader && authHeader.split(' ')[1] 
+
+    if (!token) {
+      return res.status(401).json({ message: '토큰이 제공되지 않았습니다.' })
+    }
+
+    jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
+      if (err) {
+        return res.status(403).json({ message: '유효하지 않은 토큰입니다.' })
+      }
+
+      tokenBlacklist.add(token)
+
+      res.status(200).json({ message: '로그아웃이 완료되었습니다.' })
+    })
+  } catch (err) {
+    console.error('Failed to logout:', err)
+    res.status(500).json({ message: '로그아웃에 실패하였습니다.' })
+  }
+})
+
 app.listen(port, () => console.log(`Server is running on port ${port}`))
