@@ -1,0 +1,193 @@
+@import url('https://fonts.googleapis.com/css2?family=Hahmlet:wght@100..900&family=IBM+Plex+Sans+KR&display=swap');
+
+body, html {
+  width: 1490px;
+  height: 100%;
+  margin: 0;
+
+  font-family: 'Hahmlet';
+}
+
+#container {
+  width: 1490px;
+  height: 100%;
+  margin: 0;
+}
+
+#header {
+  height: 110px;
+}
+
+#logo {
+  width: 90px;
+  padding: 10px;
+}
+
+#navbar {
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  height: 50px;
+  padding: 0 60px 10px 60px;
+}
+
+#text {
+  font-size: 1.5rem;
+}
+
+#search {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+#searchBoxWrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+#searchFilter {
+  position: absolute;
+  left: 5px;
+  padding-right: 5px;
+  padding-bottom: 2px;
+  border: none;
+  outline: none;
+  background-color: transparent;
+  font-family: 'Hahmlet';
+}
+
+#searchBox {
+  width: 140px;
+  height: 20px;
+  padding-left: 80px;
+  padding-right: 25px;
+  border: 2px solid #c1c1c1;
+}
+
+#searchBox:focus {
+  outline: none;
+}
+
+#searchButton {
+  position: absolute;
+  right: 0px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+#searchImg {
+  width: 15px;
+  padding-top: 4px;
+}
+
+#searchReservedWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+#searchReservedLabel {
+  position: relative;
+}
+
+#searchReserved {
+  vertical-align: middle;
+  appearance: none;
+  width: 50px;
+  height: 25px;
+  border: 2px solid #c1c1c1;
+  cursor: pointer;
+}
+
+#searchReserved:checked {
+  border: #85d4d4;
+  background-color: #85d4d4;
+}
+
+#searchReservedLabel span {
+  position: absolute;
+  top: 12%;
+  left: 27%;
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+#searchReserved:checked + span {
+  color: white; 
+}
+
+#content {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 475px;
+  padding-top: 20px;
+}
+
+table {
+  width: 1300px;
+  text-align: center;
+  border-collapse: collapse;
+}
+
+thead {
+  border-bottom: 2px solid #c1c1c1;
+}
+
+thead td {
+  padding-bottom: 20px;
+}
+
+tbody td {
+  padding: 19px 0;
+}
+
+#no {
+  width: 10%;
+}
+
+#supplier {
+  width: 15%;
+}
+
+#footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 66px;
+  margin: 0 60px;
+}
+
+#pagination {
+  flex-grow: 1;
+}
+
+#pagination ul {
+  display: flex;
+  justify-content: center;
+  list-style: none;
+}
+
+#pagination a {
+  padding: 10px;
+  text-decoration: none;
+  color: #000000;
+}
+
+#pagination a:hover {
+  color: #85d4d4;
+}
+
+#add {
+  width: 50px;
+  height: 25px;
+  font-family: 'Hahmlet';
+  color: white;
+  border: #c3c3c3;
+  background-color: #85d4d4;
+  cursor: pointer;
+}
