@@ -25,6 +25,10 @@ form.addEventListener('submit', async function (event) {
       return
     }
 
+    if (responseData.token) {
+      localStorage.setItem('token', responseData.token)
+    }
+
     window.location.href = 'mypage.html' 
   } catch (error) {
     console.error('Failed to login:', error)
