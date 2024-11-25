@@ -61,7 +61,7 @@ app.post('/api/login', async (req, res) => {
 
   try {
     const query = 'SELECT * FROM users WHERE user_name = ?'
-    const [results] = await db.promise().query(query, [id])
+    const [results] = await db.query(query, [id])
 
     if (results.length === 0) {
       return res.status(401).json({ message: '아이디 또는 비밀번호가 존재하지 않습니다.' })
