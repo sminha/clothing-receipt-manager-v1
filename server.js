@@ -35,20 +35,21 @@ app.post('/api/signup', async (req, res) => {
   }
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10)
-    const query = 'INSERT INTO users (store_name, user_name, password) VALUES (?, ?, ?)'
+    const checkQuery = 'SELECT * FROM users WHERE user_name = ?';
+    const [existingUser] = await db.query(checkQuery, [id]);
 
-    db.query(query, [name, id, hashedPassword], (err, result) => { 
-      if (err) {
-        console.error('Failed to save to the database:', err)
-        return res.status(500).json({ message: '회원가입에 실패하였습니다.' })
-      }
+    if (existingUser.length > 0) {
+      return res.status(409).json({ message: '이미 존재하는 아이디입니다.' });
+    }
 
-      res.status(201).json({ message: '회원가입이 완료되었습니다.' })
-    })
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const query = 'INSERT INTO users (store_name, user_name, password) VALUES (?, ?, ?)';
+    await db.query(query, [name, id, hashedPassword]);
+
+    res.status(201).json({ message: '회원가입이 완료되었습니다.' });
   } catch (err) {
-    console.error('Failed to encrypt the password:', err)
-    res.status(500).json({ message: '회원가입에 실패하였습니다.' }) 
+    console.error('Failed to sign up:', err);
+    res.status(500).json({ message: '회원가입에 실패하였습니다.' });
   }
 })
 
