@@ -11,20 +11,17 @@ require('dotenv').config()
 app.use(cors())
 app.use(express.json())
 
-const db = mysql.createConnection({
+const db = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-})
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+}).promise();
 
-db.connect((err) => {
-  if (err) {
-    console.error('Failed to connect to MySQL:', err)
-    return
-  }
-  console.log('Successfully connected to MySQL')
-})
+console.log('Successfully connected to MySQL')
 
 app.post('/api/signup', async (req, res) => {
   const { name, id, password, confirmPassword } = req.body
