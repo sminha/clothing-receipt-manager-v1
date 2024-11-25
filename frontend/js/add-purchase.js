@@ -130,18 +130,27 @@ form.addEventListener("submit", async (event) => {
   };
 
   try {
+    const token = localStorage.getItem("token");
+    
     const response = await fetch("http://localhost:3000/api/add-purchase", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, 
+      },
       body: JSON.stringify(data),
     });
 
     const responseData = await response.json();
 
-    alert(responseData.message);
-
     if (response.ok) {
-      window.location.href = "mypage.html"
+      alert(responseData.message);
+      window.location.href = "mypage.html";
+    } else if (response.status === 401 || response.status === 403) {
+      alert("인증 정보가 유효하지 않습니다. 다시 로그인해주세요.");
+      window.location.href = "login.html";
+    } else {
+      alert(responseData.message);
     }
   } catch (error) {
     console.error("Failed to add purchase:", error);
