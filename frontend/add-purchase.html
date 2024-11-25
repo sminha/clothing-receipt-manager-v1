@@ -21,76 +21,64 @@
       </div>
     </div>
     <div id="content">
-      <form action="/submit-purchase" method="POST">
+      <form id="purchase">
         <div class="form-row">
-          <label for="supplier_name">거래처명</label>
-          <input type="text" id="supplier_name" name="supplier_name" required>
+          <label for="supplier-name">거래처명</label>
+          <input type="text" id="supplier-name" required>
         </div>
         <div class="form-row">
-          <label for="purchase_date">사입 날짜</label>
-          <input type="date" id="purchase_date" name="purchase_date" required>
+          <label for="purchase-date">사입 날짜</label>
+          <input type="date" id="purchase-date" required>
         </div>
         <div id="products-container">
-          <div id="products">
+          <div class="product">
             <div class="form-row">
-              <label for="product_name1">상품명</label>
-              <input type="text" id="product_name1" name="product_name[]" required>
+              <label for="product-name">상품명</label>
+              <input type="text" class="product-name" required>
             </div>
             <div class="form-row">
-              <label for="unit_price1">단가</label>
-              <input type="text" id="unit_price1" name="unit_price[]" required>
+              <label for="product-price">단가</label>
+              <input type="text" class="product-price" required>
             </div>
             <div class="form-row">
-              <label for="quantity1">수량</label>
-              <input type="text" id="quantity1" name="quantity[]" required>
+              <label for="quantity">수량</label>
+              <input type="text" class="quantity" required>
             </div>
             <div class="form-row">
-              <label for="total_price1">금액</label>
-              <input type="text" id="total_price1" name="total_price[]" required readonly>
+              <label for="total-price">금액</label>
+              <input type="text" class="total-price" required readonly>
             </div>
             <div class="form-row">
-              <label for="reserved_quantity1">미송 수량</label>
-              <input type="text" id="reserved_quantity1" name="reserved_quantity[]" required>
+              <label for="reserved-quantity">미송 수량</label>
+              <input type="text" class="reserved-quantity" required>
             </div>
+            <button class="delete">×</button>
           </div>
-          <!-- <div id="products">
-            <div class="form-row">
-              <label for="product_name1">상품명</label>
-              <input type="text" id="product_name1" name="product_name[]" required>
-            </div>
-            <div class="form-row">
-              <label for="unit_price1">단가</label>
-              <input type="text" id="unit_price1" name="unit_price[]" required>
-            </div>
-            <div class="form-row">
-              <label for="quantity1">수량</label>
-              <input type="text" id="quantity1" name="quantity[]" required>
-            </div>
-            <div class="form-row">
-              <label for="total_price1">금액</label>
-              <input type="text" id="total_price1" name="total_price[]" required readonly>
-            </div>
-            <div class="form-row">
-              <label for="reserved_quantity1">미송 수량</label>
-              <input type="text" id="reserved_quantity1" name="reserved_quantity[]" required>
-            </div>
-          </div> -->
-          <button type="submit" id="add">+</button>
+          <button id="add">+</button>
           <hr id="divider">
           <div id="sum">
-            <span id="sum1">합계</span>
-            <span id="sum2">0건</span>
-            <span id="sum3">0개</span>
-            <span id="sum4">0원</span>
-            <span id="sum5">0개</span>
+            <div id="sum1">
+              <span>합계</span>
+            </div>
+            <div id="sum2">
+              <span>1건</span>
+            </div>
+            <div id="sum3">
+              <span>0개</span>
+            </div>
+            <div id="sum4">
+              <span>0원</span>
+            </div>
+            <div id="sum5">
+              <span>0개</span>
+            </div>
           </div>
         </div>
       </form>
     </div>
-
     <div id="footer">
-      <button type="submit" id="toList">목록으로</button>
-      <button type="submit">완료</button>
+      <button onclick="window.location.href='mypage.html';" id="toList">목록으로</button>
+      <button type="submit" id="complete">완료</button>
     </div>
   </div>
 </body>
