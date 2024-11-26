@@ -249,4 +249,68 @@ app.get('/api/mypage', async (req, res) => {
   }
 });
 
+const authenticateToken = (req, res, next) => {
+  const token = req.headers['authorization']?.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
+    if (err) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    req.user = user;
+    next();
+  });
+};
+
+app.get('/api/view-purchase/:purchaseId', authenticateToken, async (req, res) => {
+  const { purchaseId } = req.params;
+
+  try {
+    const purchaseQuery = `
+      SELECT p.id AS purchaseId, p.purchase_date, s.supplier_name
+      FROM purchases p
+      JOIN suppliers s ON p.supplier_id = s.id
+      WHERE p.id = ?
+    `;
+    const [purchaseResult] = await db.query(purchaseQuery, [purchaseId]);
+
+    if (!purchaseResult || purchaseResult.length === 0) {
+      return res.status(404).json({ message: 'Purchase not found' });
+    }
+
+    const purchase = purchaseResult[0];
+
+    const productsQuery = `
+      SELECT pr.product_name, pr.product_price, pp.quantity, 
+             (pr.product_price * pp.quantity) AS total_price, pp.reserved_quantity
+      FROM purchases_products pp
+      JOIN products pr ON pp.product_id = pr.id
+      WHERE pp.purchase_id = ?
+    `;
+    const [productsResult] = await db.query(productsQuery, [purchaseId]);
+
+    const totalProducts = productsResult.length;
+    const totalQuantity = productsResult.reduce((acc, product) => acc + product.quantity, 0);
+    const totalPrice = productsResult.reduce((acc, product) => acc + product.total_price, 0);
+    const totalReservedQuantity = productsResult.reduce((acc, product) => acc + product.reserved_quantity, 0);
+
+    const responseData = {
+      supplierName: purchase.supplier_name,
+      purchaseDate: purchase.purchase_date,
+      products: productsResult,
+      totalProducts,
+      totalQuantity,
+      totalPrice,
+      totalReservedQuantity,
+    };
+
+    res.json(responseData);
+  } catch (error) {
+    console.error('Error fetching purchase details:', error);
+    res.status(500).json({ message: '서버에서 오류가 발생했습니다.' });
+  }
+});
+
 app.listen(port, () => console.log(`Server is running on port ${port}`))
