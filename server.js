@@ -214,12 +214,6 @@ app.get('/api/mypage', async (req, res) => {
 
     const storeName = userResult[0].store_name;
 
-    const [countResult] = await db.query(
-      'SELECT COUNT(*) AS totalPurchases FROM purchases WHERE user_id = ?',
-      [userId]
-    );
-    const totalPurchases = countResult[0]?.totalPurchases || 0;
-
     const [ordersResult] = await db.query(`
       SELECT 
         p.id AS purchaseId,
@@ -240,7 +234,6 @@ app.get('/api/mypage', async (req, res) => {
 
     res.status(200).json({
       storeName,
-      totalPurchases,
       orders: ordersResult,
     });
   } catch (error) {
