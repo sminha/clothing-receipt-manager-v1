@@ -166,6 +166,10 @@ tbody td {
   width: 15%;
 }
 
+#date {
+  width: 15%;
+}
+
 #footer {
   display: flex;
   justify-content: space-between;
