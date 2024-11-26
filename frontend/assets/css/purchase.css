@@ -73,8 +73,6 @@ body, html {
   cursor: not-allowed;
 }
 
-
-
 #products-container {
   display: flex;
   flex-direction: column;
@@ -96,10 +94,6 @@ body, html {
   border: 2px solid #c1c1c1;
   cursor: pointer;
 }
-
-/* .product-details {
-  flex-grow: 1;
-} */
 
 #add {
   align-self: flex-start;
@@ -127,13 +121,10 @@ body, html {
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  /* width: 1229px;
-  margin-left: 81px; */
 }
 
 #sum1 {
   width: 80px;
-  /* padding-right: 100px; */
 }
 
 #sum2 {
