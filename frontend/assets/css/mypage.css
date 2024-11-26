@@ -198,6 +198,10 @@ tbody td {
   color: #85d4d4;
 }
 
+#pagination li.active a {
+  color: #85d4d4;
+}
+
 #add {
   width: 50px;
   height: 25px;
