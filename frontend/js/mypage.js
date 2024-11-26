@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const data = await response.json();
-    const { storeName, totalPurchases, orders } = data;
+    const { storeName, orders } = data;
 
     const textDiv = document.getElementById('text');
     textDiv.innerHTML = `<span>${storeName}님, 안녕하세요!</span>`;
@@ -53,7 +53,11 @@ const filterOrders = () => {
     const formattedDate = new Date(order.purchaseDate).toLocaleDateString('ko-KR');
     const row = `
       <tr>
-        <td>${startIdx + index + 1}</td> <!-- 수정: 번호는 전체 데이터 기준 -->
+        <td>
+          <a href="view-purchase.html?purchaseId=${order.purchaseId}" id="no-link">
+            ${startIdx + index + 1}
+          </a>
+        </td> 
         <td>${order.supplierName}</td>
         <td>${formattedDate}</td>
         <td>${order.totalProducts}</td>
