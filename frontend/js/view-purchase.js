@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <label for="reserved-quantity">미송 수량</label>
             <input type="text" class="reserved-quantity" value="${product.reserved_quantity}" readonly>
           </div>
-        </div
+        </div>
       `;
       productsContainer.insertAdjacentHTML('beforeend', productHTML);
     });
@@ -76,6 +76,43 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>
     `;
     productsContainer.insertAdjacentHTML('beforeend', sumHTML);
+
+    const purchaseData = {
+      purchaseId, 
+      supplierName: data.supplierName,
+      purchaseDate: formattedDate,
+      products: data.products,
+    };
+    sessionStorage.setItem('purchaseData', JSON.stringify(purchaseData));
+
+    document.getElementById('edit').addEventListener('click', () => {
+      window.location.href = 'edit-purchase.html';
+    });
+
+    document.getElementById('delete').addEventListener('click', async () => {
+      const confirmation = confirm('정말로 이 주문을 삭제하시겠습니까?');
+      if (!confirmation) return;
+
+      try {
+        const deleteResponse = await fetch(`http://localhost:3000/api/delete-purchase/${purchaseId}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+
+        if (!deleteResponse.ok) {
+          throw new Error('주문 삭제에 실패했습니다.');
+        }
+
+        const result = await deleteResponse.json();
+        alert(result.message);
+        window.location.href = 'mypage.html';
+      } catch (error) {
+        console.error('삭제 오류:', error.message);
+        alert('주문 삭제에 실패했습니다.');
+      }
+    });
   } catch (error) {
     console.error('Error fetching purchase details:', error.message);
     alert('데이터를 불러오는 중 오류가 발생했습니다.');
