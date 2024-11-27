@@ -306,4 +306,112 @@ app.get('/api/view-purchase/:purchaseId', authenticateToken, async (req, res) =>
   }
 });
 
+app.put('/api/edit-purchase/:purchaseId', authenticateToken, async (req, res) => {
+  const { purchaseId } = req.params;
+  const { supplierName, purchaseDate, products } = req.body;
+
+  if (!supplierName || !purchaseDate || !products || products.length === 0) {
+    return res.status(400).json({ message: '입력된 데이터가 유효하지 않습니다.' });
+  }
+
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const decoded = req.user;
+    const userId = decoded.id;
+
+    const [purchaseResult] = await connection.query(
+      `SELECT id, supplier_id FROM purchases WHERE id = ? AND user_id = ?`,
+      [purchaseId, userId]
+    );
+
+    if (purchaseResult.length === 0) {
+      return res.status(404).json({ message: '수정할 구매 내역을 찾을 수 없습니다.' });
+    }
+
+    const supplierId = purchaseResult[0].supplier_id;
+
+    await connection.query(
+      `UPDATE suppliers SET supplier_name = ? WHERE id = ?`,
+      [supplierName, supplierId]
+    );
+
+    await connection.query(
+      `UPDATE purchases SET purchase_date = ? WHERE id = ?`,
+      [purchaseDate, purchaseId]
+    );
+
+    const [deletedProducts] = await connection.query(
+      `SELECT pp.product_id FROM purchases_products pp 
+       WHERE pp.purchase_id = ?`,
+      [purchaseId]
+    );
+
+    await connection.query(
+      `DELETE FROM purchases_products WHERE purchase_id = ?`,
+      [purchaseId]
+    );
+
+    for (const { product_id } of deletedProducts) {
+      const [productUsageCount] = await connection.query(
+        `SELECT COUNT(*) AS usage_count FROM purchases_products WHERE product_id = ?`,
+        [product_id]
+      );
+
+      if (productUsageCount[0].usage_count === 0) {
+        await connection.query(
+          `DELETE FROM products WHERE id = ?`,
+          [product_id]
+        );
+      }
+    }
+
+    for (const product of products) {
+      const { productId, productName, productPrice, quantity, reservedQuantity } = product;
+
+      let existingProduct = await connection.query(
+        `SELECT id FROM products WHERE product_name = ? AND supplier_id = ?`,
+        [productName, supplierId]
+      );
+
+      if (productId) {
+        await connection.query(
+          `UPDATE products 
+           SET product_name = ?, product_price = ? 
+           WHERE id = ? AND supplier_id = ?`,
+          [productName, productPrice, productId, supplierId]
+        );
+      } else {
+        if (existingProduct[0].length === 0) {
+          const [newProduct] = await connection.query(
+            `INSERT INTO products (supplier_id, product_name, product_price) 
+             VALUES (?, ?, ?)`,
+            [supplierId, productName, productPrice]
+          );
+          product.productId = newProduct.insertId;
+        } else {
+          product.productId = existingProduct[0][0].id;
+        }
+      }
+
+      await connection.query(
+        `INSERT INTO purchases_products (purchase_id, product_id, quantity, reserved_quantity) 
+         VALUES (?, ?, ?, ?)`,
+        [purchaseId, product.productId, quantity, reservedQuantity]
+      );
+    }
+
+    await connection.commit();
+    res.status(200).json({ message: '구매 내역이 성공적으로 수정되었습니다.' });
+  } catch (error) {
+    console.error('Error updating purchase:', error);
+    await connection.rollback();
+    res.status(500).json({ message: '수정 중 오류가 발생했습니다.' });
+  } finally {
+    connection.release();
+  }
+});
+
 app.listen(port, () => console.log(`Server is running on port ${port}`))
