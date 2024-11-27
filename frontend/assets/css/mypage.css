@@ -174,10 +174,6 @@ tbody td {
   text-decoration: none;
 }
 
-#no-link:hover {
-  color: #85d4d4;
-}
-
 #no-link:visited {
   color: #000000;
 }
