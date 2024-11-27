@@ -414,4 +414,21 @@ app.put('/api/edit-purchase/:purchaseId', authenticateToken, async (req, res) =>
   }
 });
 
+app.delete('/api/delete-purchase/:purchaseId', authenticateToken, async (req, res) => {
+  const purchaseId = req.params.purchaseId;
+
+  try {
+    const purchase = await db.query('DELETE FROM purchases WHERE id = ?', [purchaseId]);
+    
+    if (purchase.affectedRows === 0) {
+      return res.status(404).json({ message: '주문을 찾을 수 없습니다.' });
+    }
+
+    res.status(200).json({ message: '주문이 삭제되었습니다.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: '서버 오류가 발생했습니다.' });
+  }
+});
+
 app.listen(port, () => console.log(`Server is running on port ${port}`))
