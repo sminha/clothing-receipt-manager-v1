@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="assets/css/purchase.css">
+  <link rel="icon" href="favicon.png" type="image/png">
+  <script src="js/edit-purchase.js" defer></script>
+  <title>옷장</title>
+</head>
+<body>
+  <div id="container">
+    <div id="header">
+      <a href="index.html">
+        <img id="logo" src="assets/images/logo.jpg">
+      </a>
+    </div>
+    <div id="navbar">
+      <div id="text">
+        <span>사입 내역 수정</span>
+      </div>
+    </div>
+    <div id="content">
+      <form id="purchase">
+        <div class="form-row">
+          <label for="supplier-name">거래처명</label>
+          <input type="text" id="supplier-name" name="supplier-name" required>
+        </div>
+        <div class="form-row">
+          <label for="purchase-date">사입 날짜</label>
+          <input type="date" id="purchase-date" name="purchase-date" required>
+        </div>
+        <div id="products-container"></div>
+        <button type="button" id="add">+</button>
+        <hr id="divider">
+        <div id="sum">
+          <div id="sum1">
+            <span>합계</span>
+          </div>
+          <div id="sum2"></div>
+          <div id="sum3"></div>
+          <div id="sum4"></div>
+          <div id="sum5"></div>
+        </div>
+      </form>
+    </div>
+    <div id="footer">
+      <button onclick="window.location.href='mypage.html';" type="button" id="toList">목록으로</button>
+      <button type="submit" id="complete">완료</button>
+    </div>
+  </div>
+</body>
+</html>
