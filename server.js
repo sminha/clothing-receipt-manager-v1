@@ -275,9 +275,9 @@ app.get('/api/view-purchase/:purchaseId', authenticateToken, async (req, res) =>
 
   try {
     const purchaseQuery = `
-      SELECT p.id AS purchaseId, p.purchase_date, s.supplier_name
+      SELECT p.id AS purchaseId, p.purchase_date, w.wholesale_name
       FROM purchases p
-      JOIN suppliers s ON p.supplier_id = s.id
+      JOIN wholesales w ON p.wholesale_id = w.id
       WHERE p.id = ?
     `;
     const [purchaseResult] = await db.query(purchaseQuery, [purchaseId]);
@@ -303,7 +303,7 @@ app.get('/api/view-purchase/:purchaseId', authenticateToken, async (req, res) =>
     const totalReservedQuantity = productsResult.reduce((acc, product) => acc + product.reserved_quantity, 0);
 
     const responseData = {
-      supplierName: purchase.supplier_name,
+      wholesaleName: purchase.wholesale_name,
       purchaseDate: purchase.purchase_date,
       products: productsResult,
       totalProducts,
