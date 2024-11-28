@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const formattedDate = new Date(data.purchaseDate).toISOString().split('T')[0];
     document.getElementById('purchase-date').value = formattedDate;
-    document.getElementById('supplier-name').value = data.supplierName;
+    document.getElementById('supplier-name').value = data.wholesaleName;
 
     const productsContainer = document.getElementById('products-container');
     let totalProducts = 0,
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const purchaseData = {
       purchaseId, 
-      supplierName: data.supplierName,
+      wholesaleName: data.wholesaleName,
       purchaseDate: formattedDate,
       products: data.products,
     };
