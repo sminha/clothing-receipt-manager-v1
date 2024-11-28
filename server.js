@@ -199,6 +199,7 @@ app.post("/api/add-purchase", async (req, res) => {
     const [wholesale] = await connection.query(
       "SELECT id FROM wholesales WHERE wholesale_name = ?",
       [supplierName]
+
     );
 
     let wholesaleId;
@@ -222,7 +223,7 @@ app.post("/api/add-purchase", async (req, res) => {
       const { productName, productPrice, quantity, reservedQuantity } = product;
 
       const [oldProducts] = await connection.query(
-        "SELECT id FROM products WHERE product_name = ? AND supplier_id = ?",
+        "SELECT id FROM products WHERE product_name = ? AND wholesale_id = ?",
         [productName, wholesaleId]
       );
 
