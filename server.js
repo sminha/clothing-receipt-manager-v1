@@ -321,9 +321,9 @@ app.get('/api/view-purchase/:purchaseId', authenticateToken, async (req, res) =>
 
 app.put('/api/edit-purchase/:purchaseId', authenticateToken, async (req, res) => {
   const { purchaseId } = req.params;
-  const { supplierName, purchaseDate, products } = req.body;
+  const { wholesaleName, purchaseDate, products } = req.body;
 
-  if (!supplierName || !purchaseDate || !products || products.length === 0) {
+  if (!wholesaleName || !purchaseDate || !products || products.length === 0) {
     return res.status(400).json({ message: '입력된 데이터가 유효하지 않습니다.' });
   }
 
@@ -333,22 +333,22 @@ app.put('/api/edit-purchase/:purchaseId', authenticateToken, async (req, res) =>
     await connection.beginTransaction();
 
     const decoded = req.user;
-    const userId = decoded.id;
+    const retailId = decoded.id;
 
     const [purchaseResult] = await connection.query(
-      `SELECT id, supplier_id FROM purchases WHERE id = ? AND user_id = ?`,
-      [purchaseId, userId]
+      `SELECT id, wholesale_id FROM purchases WHERE id = ? AND retail_id = ?`,
+      [purchaseId, retailId]
     );
 
     if (purchaseResult.length === 0) {
       return res.status(404).json({ message: '수정할 구매 내역을 찾을 수 없습니다.' });
     }
 
-    const supplierId = purchaseResult[0].supplier_id;
+    const wholesaleId = purchaseResult[0].wholesale_id;
 
     await connection.query(
-      `UPDATE suppliers SET supplier_name = ? WHERE id = ?`,
-      [supplierName, supplierId]
+      `UPDATE wholesales SET wholesale_name = ? WHERE id = ?`,
+      [wholesaleName, wholesaleId]
     );
 
     await connection.query(
@@ -385,23 +385,23 @@ app.put('/api/edit-purchase/:purchaseId', authenticateToken, async (req, res) =>
       const { productId, productName, productPrice, quantity, reservedQuantity } = product;
 
       let existingProduct = await connection.query(
-        `SELECT id FROM products WHERE product_name = ? AND supplier_id = ?`,
-        [productName, supplierId]
+        `SELECT id FROM products WHERE product_name = ? AND wholesale_id = ?`,
+        [productName, wholesaleId]
       );
 
       if (productId) {
         await connection.query(
           `UPDATE products 
            SET product_name = ?, product_price = ? 
-           WHERE id = ? AND supplier_id = ?`,
-          [productName, productPrice, productId, supplierId]
+           WHERE id = ? AND wholesale_id = ?`,
+          [productName, productPrice, productId, wholesaleId]
         );
       } else {
         if (existingProduct[0].length === 0) {
           const [newProduct] = await connection.query(
-            `INSERT INTO products (supplier_id, product_name, product_price) 
+            `INSERT INTO products (wholesale_id, product_name, product_price) 
              VALUES (?, ?, ?)`,
-            [supplierId, productName, productPrice]
+            [wholesaleId, productName, productPrice]
           );
           product.productId = newProduct.insertId;
         } else {
