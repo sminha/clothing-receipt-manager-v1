@@ -37,7 +37,11 @@ form.addEventListener('submit', async function (event) {
       localStorage.setItem('token', responseData.token)
     }
 
-    window.location.href = 'mypage.html' 
+    if (userType.id === 'retail') {
+      window.location.href = 'mypage.html'; 
+    } else {
+      window.location.href = 'chat.html'; 
+    }
   } catch (error) {
     console.error('Failed to login:', error)
     alert('로그인 중 문제가 발생하였습니다. 다시 시도해 주세요.')
