@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  document.getElementById('supplier-name').value = purchaseData.supplierName;
+  document.getElementById('supplier-name').value = purchaseData.wholesaleName;
   document.getElementById('purchase-date').value = purchaseData.purchaseDate;
 
   const productsContainer = document.getElementById('products-container');
@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('complete').addEventListener('click', async (event) => {
     event.preventDefault();
 
-    const updatedSupplierName = document.getElementById('supplier-name').value;
+    const updatedWholesaleName = document.getElementById('supplier-name').value;
     const updatedPurchaseDate = document.getElementById('purchase-date').value;
 
     const updatedProducts = Array.from(document.querySelectorAll('.product')).map((product) => ({
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
-          supplierName: updatedSupplierName,
+          wholesaleName: updatedWholesaleName,
           purchaseDate: updatedPurchaseDate,
           products: updatedProducts,
         }),
