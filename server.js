@@ -24,9 +24,9 @@ const db = mysql.createPool({
 console.log('Successfully connected to MySQL')
 
 app.post('/api/signup', async (req, res) => {
-  const { name, id, password, confirmPassword } = req.body
+  const { name, id, password, confirmPassword, userType } = req.body
 
-  if (!name || !id || !password || !confirmPassword) {
+  if (!name || !id || !password || !confirmPassword || !userType) {
     return res.status(400).json({ message: '입력되지 않은 필드가 존재합니다.' })
   }
 
@@ -35,16 +35,19 @@ app.post('/api/signup', async (req, res) => {
   }
 
   try {
-    const checkQuery = 'SELECT * FROM users WHERE user_name = ?';
-    const [existingUser] = await db.query(checkQuery, [id]);
+    const checkQuery = 'SELECT * FROM ?? WHERE user_name = ?';
+    const tableName = userType === 'retail' ? 'retails' : 'wholesales';
+    const [existingUser] = await db.query(checkQuery, [tableName, id]);
 
     if (existingUser.length > 0) {
       return res.status(409).json({ message: '이미 존재하는 아이디입니다.' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const query = 'INSERT INTO users (store_name, user_name, password) VALUES (?, ?, ?)';
-    await db.query(query, [name, id, hashedPassword]);
+    const insertQuery = userType === 'retail'
+      ? 'INSERT INTO retails (retail_name, user_name, password) VALUES (?, ?, ?)'
+      : 'INSERT INTO wholesales (wholesale_name, user_name, password) VALUES (?, ?, ?)';
+    await db.query(insertQuery, [name, id, hashedPassword]);
 
     res.status(201).json({ message: '회원가입이 완료되었습니다.' });
   } catch (err) {
