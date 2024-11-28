@@ -126,6 +126,54 @@ app.post('/api/logout', async (req, res) => {
   }
 })
 
+app.get('/api/mypage', async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ message: '토큰이 제공되지 않았습니다.' });
+    }
+
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
+    const userId = decoded.id;
+
+    const [userResult] = await db.query('SELECT retail_name FROM retails WHERE id = ?', [userId]);
+
+    if (userResult.length === 0) {
+      return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+    }
+
+    const retailName = userResult[0].retail_name;
+
+    const [ordersResult] = await db.query(`
+      SELECT 
+        p.id AS purchaseId,
+        w.wholesale_name AS supplierName,
+        p.purchase_date AS purchaseDate,
+        COUNT(pp.product_id) AS totalProducts,
+        SUM(pp.quantity) AS totalQuantity,
+        SUM(pp.quantity * pr.product_price) AS totalPrice,
+        SUM(pp.reserved_quantity) AS totalReserved
+      FROM purchases p
+      JOIN wholesales w ON p.wholesale_id = w.id
+      JOIN purchases_products pp ON p.id = pp.purchase_id
+      JOIN products pr ON pp.product_id = pr.id
+      WHERE p.retail_id = ?  
+      GROUP BY p.id, w.wholesale_name, p.purchase_date
+      ORDER BY p.purchase_date DESC
+    `, [userId]);
+
+    res.status(200).json({
+      retailName,
+      orders: ordersResult,
+    });
+  } catch (error) {
+    console.error('Failed to fetch mypage data:', error);
+    res.status(500).json({ message: '마이페이지 데이터를 가져오는 중 오류가 발생했습니다.' });
+  }
+});
+
 app.post("/api/add-purchase", async (req, res) => {
   const { supplierName, purchaseDate, products } = req.body;
 
@@ -204,54 +252,6 @@ app.post("/api/add-purchase", async (req, res) => {
     } finally {
     connection.release();
     }
-});
-
-app.get('/api/mypage', async (req, res) => {
-  try {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-      return res.status(401).json({ message: '토큰이 제공되지 않았습니다.' });
-    }
-
-    const decoded = jwt.verify(token, process.env.SECRET_KEY);
-    const userId = decoded.id;
-
-    const [userResult] = await db.query('SELECT store_name FROM users WHERE id = ?', [userId]);
-
-    if (userResult.length === 0) {
-      return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
-    }
-
-    const storeName = userResult[0].store_name;
-
-    const [ordersResult] = await db.query(`
-      SELECT 
-        p.id AS purchaseId,
-        s.supplier_name AS supplierName,
-        p.purchase_date AS purchaseDate,
-        COUNT(pp.product_id) AS totalProducts,
-        SUM(pp.quantity) AS totalQuantity,
-        SUM(pp.quantity * pr.product_price) AS totalPrice,
-        SUM(pp.reserved_quantity) AS totalReserved
-      FROM purchases p
-      JOIN suppliers s ON p.supplier_id = s.id
-      JOIN purchases_products pp ON p.id = pp.purchase_id
-      JOIN products pr ON pp.product_id = pr.id
-      WHERE p.user_id = ?
-      GROUP BY p.id, s.supplier_name, p.purchase_date
-      ORDER BY p.purchase_date DESC
-    `, [userId]);
-
-    res.status(200).json({
-      storeName,
-      orders: ordersResult,
-    });
-  } catch (error) {
-    console.error('Failed to fetch mypage data:', error);
-    res.status(500).json({ message: '마이페이지 데이터를 가져오는 중 오류가 발생했습니다.' });
-  }
 });
 
 const authenticateToken = (req, res, next) => {
