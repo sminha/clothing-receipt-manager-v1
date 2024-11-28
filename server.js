@@ -194,27 +194,27 @@ app.post("/api/add-purchase", async (req, res) => {
     }
 
     const decoded = jwt.verify(token, process.env.SECRET_KEY); 
-    const userId = decoded.id;
+    const retailId = decoded.id;
 
-    const [supplier] = await connection.query(
-      "SELECT id FROM suppliers WHERE supplier_name = ?",
+    const [wholesale] = await connection.query(
+      "SELECT id FROM wholesales WHERE wholesale_name = ?",
       [supplierName]
     );
 
-    let supplierId;
-    if (supplier.length === 0) {
+    let wholesaleId;
+    if (wholesale.length === 0) {
       const [result] = await connection.query(
-        "INSERT INTO suppliers (supplier_name) VALUES (?)",
+        "INSERT INTO wholesales (wholesale_name) VALUES (?)",
         [supplierName]
       );
-      supplierId = result.insertId;
+      wholesaleId = result.insertId;
     } else {
-      supplierId = supplier[0].id;
+      wholesaleId = wholesale[0].id;
     }
 
     const [purchase] = await connection.query(
-      "INSERT INTO purchases (user_id, supplier_id, purchase_date) VALUES (?, ?, ?)",
-      [userId, supplierId, purchaseDate]
+      "INSERT INTO purchases (retail_id, wholesale_id, purchase_date) VALUES (?, ?, ?)",
+      [retailId, wholesaleId, purchaseDate]
     );
     const purchaseId = purchase.insertId;
 
@@ -223,14 +223,14 @@ app.post("/api/add-purchase", async (req, res) => {
 
       const [oldProducts] = await connection.query(
         "SELECT id FROM products WHERE product_name = ? AND supplier_id = ?",
-        [productName, supplierId]
+        [productName, wholesaleId]
       );
 
       let productId;
       if (oldProducts.length === 0) {
         const [newProduct] = await connection.query(
-          "INSERT INTO products (supplier_id, product_name, product_price) VALUES (?, ?, ?)",
-          [supplierId, productName, productPrice]
+          "INSERT INTO products (wholesale_id, product_name, product_price) VALUES (?, ?, ?)",
+          [wholesaleId, productName, productPrice]
         );
         productId = newProduct.insertId;
       } else {
