@@ -11,10 +11,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const data = await response.json();
-    const { storeName, orders } = data;
+    const { retailName, orders } = data;
 
     const textDiv = document.getElementById('text');
-    textDiv.innerHTML = `<span>${storeName}님, 안녕하세요!</span>`;
+    textDiv.innerHTML = `<span>${retailName}님, 안녕하세요!</span>`;
 
     totalItems = orders.length; 
     window.allOrders = orders; 
