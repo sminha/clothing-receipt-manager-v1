@@ -7,7 +7,8 @@ form.addEventListener('submit', async function (event) {
     name: form.elements[0].value,
     id: form.elements[1].value, 
     password: form.elements[2].value,
-    confirmPassword: form.elements[3].value, 
+    confirmPassword: form.elements[3].value,
+    userType: document.querySelector('input[name="userType"]:checked').value, 
   }
 
   try {
