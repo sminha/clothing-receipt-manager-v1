@@ -3,7 +3,15 @@ const form = document.getElementById('form')
 form.addEventListener('submit', async function (event) {
   event.preventDefault() 
 
+  const userType = document.querySelector('input[name="userType"]:checked');
+  
+  if (!userType) {
+    alert('도매 또는 소매를 선택하세요.');
+    return;
+  }
+
   const data = {
+    userType: userType.id,
     id: form.elements[0].value, 
     password: form.elements[1].value, 
   }
