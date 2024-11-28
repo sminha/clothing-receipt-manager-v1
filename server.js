@@ -430,14 +430,41 @@ app.put('/api/edit-purchase/:purchaseId', authenticateToken, async (req, res) =>
 app.delete('/api/delete-purchase/:purchaseId', authenticateToken, async (req, res) => {
   const purchaseId = req.params.purchaseId;
 
+  const connection = await db.getConnection();
+
   try {
-    const purchase = await db.query('DELETE FROM purchases WHERE id = ?', [purchaseId]);
-    
-    if (purchase.affectedRows === 0) {
+    await connection.beginTransaction();
+
+    const [products] = await connection.query(
+      'SELECT product_id FROM purchases_products WHERE purchase_id = ?', [purchaseId]
+    );
+
+    if (products.length === 0) {
+      return res.status(404).json({ message: '해당 구매에 포함된 제품이 없습니다.' });
+    }
+
+    for (const product of products) {
+      const [otherPurchases] = await connection.query(
+        'SELECT COUNT(*) AS count FROM purchases_products WHERE product_id = ? AND purchase_id != ?', [product.product_id, purchaseId]
+      );
+
+      if (otherPurchases[0].count === 0) {
+        await connection.query('DELETE FROM products WHERE id = ?', [product.product_id]);
+      }
+    }
+
+    await connection.query('DELETE FROM purchases_products WHERE purchase_id = ?', [purchaseId]);
+
+    const [deletedPurchase] = await connection.query('DELETE FROM purchases WHERE id = ?', [purchaseId]);
+
+    if (deletedPurchase.affectedRows === 0) {
+      await connection.rollback(); 
       return res.status(404).json({ message: '주문을 찾을 수 없습니다.' });
     }
 
-    res.status(200).json({ message: '주문이 삭제되었습니다.' });
+    await connection.commit();
+
+    res.status(200).json({ message: '주문과 관련된 제품들이 삭제되었습니다.' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: '서버 오류가 발생했습니다.' });
