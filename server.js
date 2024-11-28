@@ -57,14 +57,23 @@ app.post('/api/signup', async (req, res) => {
 })
 
 app.post('/api/login', async (req, res) => {
-  const { id, password } = req.body
+  const { userType, id, password } = req.body
 
-  if (!id || !password) {
+  if (!userType || !id || !password) {
     return res.status(400).json({ message: '입력되지 않은 필드가 존재합니다.' })
   }
 
+  let query;
+
+  if (userType === 'wholesale') {
+    query = 'SELECT * FROM wholesales WHERE user_name = ?';
+  } else if (userType === 'retail') {
+    query = 'SELECT * FROM retails WHERE user_name = ?';
+  } else {
+    return res.status(400).json({ message: '잘못된 사용자 유형입니다.' });
+  }
+
   try {
-    const query = 'SELECT * FROM users WHERE user_name = ?'
     const [results] = await db.query(query, [id])
 
     if (results.length === 0) {
@@ -78,7 +87,7 @@ app.post('/api/login', async (req, res) => {
       return res.status(401).json({ message: '아이디 또는 비밀번호가 존재하지 않습니다.' })
     }
 
-    const token = jwt.sign({ id: user.id, name: user.name }, process.env.SECRET_KEY, { expiresIn: '1h' }) 
+    const token = jwt.sign({ id: user.id, name: userType === 'wholesale' ? user.wholesale_name : user.retail_name, userType }, process.env.SECRET_KEY, { expiresIn: '1h' }) 
 
     res.status(200).json({
       message: '로그인이 완료되었습니다.',
