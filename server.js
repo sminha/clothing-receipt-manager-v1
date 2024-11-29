@@ -209,6 +209,8 @@ app.post("/api/add-purchase", async (req, res) => {
     for (const product of products) {
       const { productName, productPrice, quantity, reservedQuantity } = product;
 
+      const cleanProductPrice = parseFloat(productPrice.replace(/,/g, ''));
+
       const [oldProducts] = await connection.query(
         "SELECT id FROM products WHERE product_name = ? AND supplier_id = ?",
         [productName, supplierId]
@@ -218,7 +220,7 @@ app.post("/api/add-purchase", async (req, res) => {
       if (oldProducts.length === 0) {
         const [newProduct] = await connection.query(
           "INSERT INTO products (supplier_id, product_name, product_price) VALUES (?, ?, ?)",
-          [supplierId, productName, productPrice]
+          [supplierId, productName, cleanProductPrice]
         );
         productId = newProduct.insertId;
       } else {
