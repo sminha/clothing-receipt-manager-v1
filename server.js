@@ -431,4 +431,61 @@ app.delete('/api/delete-purchase/:purchaseId', authenticateToken, async (req, re
   }
 });
 
+const multer = require('multer');
+const axios = require('axios');
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+const API_KEY = process.env.GOOGLE_API_KEY;
+
+async function detectTextFromImage(imageBuffer) {
+  const url = `https://vision.googleapis.com/v1/images:annotate?key=${API_KEY}`;
+
+  const image = imageBuffer.toString('base64');
+
+  const requestBody = {
+    requests: [
+      {
+        image: { content: image },
+        features: [
+          {
+            type: 'TEXT_DETECTION',
+            maxResults: 1,
+          },
+        ],
+      },
+    ],
+  };
+
+  try {
+    const response = await axios.post(url, requestBody, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const annotations = response.data.responses[0].textAnnotations;
+    if (annotations) {
+      return annotations[0].description;
+    } else {
+      return 'No text found';
+    }
+  } catch (error) {
+    console.error('Error during OCR request:', error);
+    throw new Error('OCR 요청 중 오류가 발생했습니다.');
+  }
+}
+
+app.post('/api/upload-image', upload.single('image'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: '이미지가 업로드되지 않았습니다.' });
+  }
+
+  try {
+    const text = await detectTextFromImage(req.file.buffer);
+    res.status(200).json({ detectedText: text });
+  } catch (error) {
+    res.status(500).json({ message: 'OCR 처리 중 오류가 발생했습니다.' });
+  }
+});
+
 app.listen(port, () => console.log(`Server is running on port ${port}`))
