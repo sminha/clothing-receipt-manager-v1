@@ -229,7 +229,7 @@ uploadForm.addEventListener('submit', async (event) => {
   event.preventDefault();
 
   const formData = new FormData();
-  const fileInput = document.getElementById('imageInput');
+  const fileInput = document.getElementById('fileInput');
   formData.append('image', fileInput.files[0]);
 
   try {
