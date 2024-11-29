@@ -264,11 +264,23 @@ uploadForm.addEventListener('submit', async (event) => {
         console.log(item.productName)
         console.log(item.productPrice)
       });
+
+    const saveResponse = await fetch('http://localhost:3000/api/save-image', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const saveData = await saveResponse.json();
+    if (saveResponse.ok) {
+      console.log('이미지 저장 완료:', saveData.savedFilePath);
+    } else {
+      alert(`이미지 저장 오류: ${saveData.message}`);
+    }
+
     } else {
       alert(`오류: ${data.message}`);
     }
   } catch (error) {
-    console.error(error)
     alert('업로드 중 오류가 발생했습니다.');
   }
 });
