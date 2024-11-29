@@ -435,6 +435,8 @@ app.delete('/api/delete-purchase/:purchaseId', authenticateToken, async (req, re
 
 const multer = require('multer');
 const axios = require('axios');
+const path = require('path');
+const fs = require('fs');
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -484,10 +486,44 @@ app.post('/api/upload-image', upload.single('image'), async (req, res) => {
 
   try {
     const text = await detectTextFromImage(req.file.buffer);
-    res.status(200).json({ detectedText: text });
+
+    res.status(200).json({
+      detectedText: text,
+    });
   } catch (error) {
     res.status(500).json({ message: 'OCR 처리 중 오류가 발생했습니다.' });
   }
 });
+
+const uploadDirectory = 'uploads/';
+if (!fs.existsSync(uploadDirectory)) {
+  fs.mkdirSync(uploadDirectory);
+}
+
+const diskStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDirectory); 
+  },
+  filename: (req, file, cb) => {
+    const fileExtension = path.extname(file.originalname);
+    const fileName = Date.now() + fileExtension; 
+    cb(null, fileName);
+  },
+});
+
+const diskUpload = multer({ storage: diskStorage });
+
+app.post('/api/save-image', diskUpload.single('image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: '이미지가 업로드되지 않았습니다.' });
+  }
+
+  const filePath = path.join(uploadDirectory, req.file.filename);
+  
+  res.status(200).json({
+    message: '이미지가 성공적으로 저장되었습니다.',
+    savedFilePath: filePath, 
+  });
+}); 
 
 app.listen(port, () => console.log(`Server is running on port ${port}`))
