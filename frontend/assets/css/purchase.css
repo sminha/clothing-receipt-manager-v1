@@ -34,6 +34,33 @@ body, html {
 
 #text {
   font-size: 1.5rem;
+  display: flex;
+  gap: 30px;
+}
+
+#uploadForm {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+label[for="fileInput"] {
+  padding: 0 7px;
+  border: 2px solid #85d4d4;
+  background-color: #85d4d4;
+  font-size: 0.9rem;
+  color: white;
+  font-family: 'Hahmlet';
+  cursor: pointer;
+}
+
+#imageUpload {
+  border: 2px solid #85d4d4;
+  background-color: #85d4d4;
+  color: white;
+  font-family: 'Hahmlet';
+  cursor: pointer;
 }
 
 #content {
