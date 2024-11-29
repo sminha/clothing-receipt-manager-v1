@@ -185,6 +185,8 @@ const completeButton = document.getElementById("complete");
 completeButton.addEventListener("click", (event) => {
   event.preventDefault();
   form.dispatchEvent(new Event("submit"));
+  
+  localStorage.removeItem('uploadedImageData');
 });
 
 function extractReceiptData(text) {
@@ -240,9 +242,10 @@ uploadForm.addEventListener('submit', async (event) => {
     const data = await response.json();
 
     if (response.ok) {
-      console.log(extractReceiptData(data.detectedText))
-
       const receiptData = extractReceiptData(data.detectedText);
+
+      localStorage.setItem('uploadedImageData', JSON.stringify(receiptData));
+
       document.getElementById('supplier-name').value = receiptData.supplierName; 
       document.getElementById('purchase-date').value = receiptData.purchaseDate; 
 
@@ -251,7 +254,6 @@ uploadForm.addEventListener('submit', async (event) => {
 
         const lastProduct = document.querySelector("#products-container .product:last-child");
         if (!lastProduct) {
-          console.error("새로 추가된 제품을 찾을 수 없음");
           return;
         }
 
@@ -282,5 +284,31 @@ uploadForm.addEventListener('submit', async (event) => {
     }
   } catch (error) {
     alert('업로드 중 오류가 발생했습니다.');
+  }
+});
+
+window.addEventListener('load', () => {
+
+  const receiptData = JSON.parse(localStorage.getItem('uploadedImageData'));
+
+  if (receiptData) {
+    document.getElementById('supplier-name').value = receiptData.supplierName;
+    document.getElementById('purchase-date').value = receiptData.purchaseDate;
+
+    receiptData.items.forEach(item => {
+      addNewProduct(item);
+
+      const lastProduct = document.querySelector("#products-container .product:last-child");
+      if (!lastProduct) {
+        console.error("새로 추가된 제품을 찾을 수 없음");
+        return;
+      }
+
+      lastProduct.querySelector(".product-name").value = item.productName;
+      lastProduct.querySelector(".product-price").value = item.productPrice;
+      lastProduct.querySelector(".quantity").value = item.quantity;
+      lastProduct.querySelector(".reserved-quantity").value = 0;
+      updateTotalPrice(lastProduct);
+    });
   }
 });
