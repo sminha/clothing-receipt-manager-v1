@@ -288,7 +288,6 @@ uploadForm.addEventListener('submit', async (event) => {
 });
 
 window.addEventListener('load', () => {
-
   const receiptData = JSON.parse(localStorage.getItem('uploadedImageData'));
 
   if (receiptData) {
@@ -311,4 +310,6 @@ window.addEventListener('load', () => {
       updateTotalPrice(lastProduct);
     });
   }
+
+  localStorage.removeItem('uploadedImageData');
 });
