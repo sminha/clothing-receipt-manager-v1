@@ -114,6 +114,54 @@ app.post('/api/logout', async (req, res) => {
   }
 })
 
+app.get('/api/mypage', async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ message: '토큰이 제공되지 않았습니다.' });
+    }
+
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
+    const userId = decoded.id;
+
+    const [userResult] = await db.query('SELECT store_name FROM users WHERE id = ?', [userId]);
+
+    if (userResult.length === 0) {
+      return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+    }
+
+    const storeName = userResult[0].store_name;
+
+    const [ordersResult] = await db.query(`
+      SELECT 
+        p.id AS purchaseId,
+        s.supplier_name AS supplierName,
+        p.purchase_date AS purchaseDate,
+        COUNT(pp.product_id) AS totalProducts,
+        SUM(pp.quantity) AS totalQuantity,
+        SUM(pp.quantity * pr.product_price) AS totalPrice,
+        SUM(pp.reserved_quantity) AS totalReserved
+      FROM purchases p
+      JOIN suppliers s ON p.supplier_id = s.id
+      JOIN purchases_products pp ON p.id = pp.purchase_id
+      JOIN products pr ON pp.product_id = pr.id
+      WHERE p.user_id = ?
+      GROUP BY p.id, s.supplier_name, p.purchase_date
+      ORDER BY p.purchase_date DESC
+    `, [userId]);
+
+    res.status(200).json({
+      storeName,
+      orders: ordersResult,
+    });
+  } catch (error) {
+    console.error('Failed to fetch mypage data:', error);
+    res.status(500).json({ message: '마이페이지 데이터를 가져오는 중 오류가 발생했습니다.' });
+  }
+});
+
 app.post("/api/add-purchase", async (req, res) => {
   const { supplierName, purchaseDate, products } = req.body;
 
@@ -161,6 +209,8 @@ app.post("/api/add-purchase", async (req, res) => {
     for (const product of products) {
       const { productName, productPrice, quantity, reservedQuantity } = product;
 
+      const cleanProductPrice = parseFloat(productPrice.replace(/,/g, ''));
+
       const [oldProducts] = await connection.query(
         "SELECT id FROM products WHERE product_name = ? AND supplier_id = ?",
         [productName, supplierId]
@@ -170,7 +220,7 @@ app.post("/api/add-purchase", async (req, res) => {
       if (oldProducts.length === 0) {
         const [newProduct] = await connection.query(
           "INSERT INTO products (supplier_id, product_name, product_price) VALUES (?, ?, ?)",
-          [supplierId, productName, productPrice]
+          [supplierId, productName, cleanProductPrice]
         );
         productId = newProduct.insertId;
       } else {
@@ -192,54 +242,6 @@ app.post("/api/add-purchase", async (req, res) => {
     } finally {
     connection.release();
     }
-});
-
-app.get('/api/mypage', async (req, res) => {
-  try {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-      return res.status(401).json({ message: '토큰이 제공되지 않았습니다.' });
-    }
-
-    const decoded = jwt.verify(token, process.env.SECRET_KEY);
-    const userId = decoded.id;
-
-    const [userResult] = await db.query('SELECT store_name FROM users WHERE id = ?', [userId]);
-
-    if (userResult.length === 0) {
-      return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
-    }
-
-    const storeName = userResult[0].store_name;
-
-    const [ordersResult] = await db.query(`
-      SELECT 
-        p.id AS purchaseId,
-        s.supplier_name AS supplierName,
-        p.purchase_date AS purchaseDate,
-        COUNT(pp.product_id) AS totalProducts,
-        SUM(pp.quantity) AS totalQuantity,
-        SUM(pp.quantity * pr.product_price) AS totalPrice,
-        SUM(pp.reserved_quantity) AS totalReserved
-      FROM purchases p
-      JOIN suppliers s ON p.supplier_id = s.id
-      JOIN purchases_products pp ON p.id = pp.purchase_id
-      JOIN products pr ON pp.product_id = pr.id
-      WHERE p.user_id = ?
-      GROUP BY p.id, s.supplier_name, p.purchase_date
-      ORDER BY p.purchase_date DESC
-    `, [userId]);
-
-    res.status(200).json({
-      storeName,
-      orders: ordersResult,
-    });
-  } catch (error) {
-    console.error('Failed to fetch mypage data:', error);
-    res.status(500).json({ message: '마이페이지 데이터를 가져오는 중 오류가 발생했습니다.' });
-  }
 });
 
 const authenticateToken = (req, res, next) => {
@@ -430,5 +432,98 @@ app.delete('/api/delete-purchase/:purchaseId', authenticateToken, async (req, re
     res.status(500).json({ message: '서버 오류가 발생했습니다.' });
   }
 });
+
+const multer = require('multer');
+const axios = require('axios');
+const path = require('path');
+const fs = require('fs');
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+const API_KEY = process.env.GOOGLE_API_KEY;
+
+async function detectTextFromImage(imageBuffer) {
+  const url = `https://vision.googleapis.com/v1/images:annotate?key=${API_KEY}`;
+
+  const image = imageBuffer.toString('base64');
+
+  const requestBody = {
+    requests: [
+      {
+        image: { content: image },
+        features: [
+          {
+            type: 'TEXT_DETECTION',
+            maxResults: 1,
+          },
+        ],
+      },
+    ],
+  };
+
+  try {
+    const response = await axios.post(url, requestBody, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const annotations = response.data.responses[0].textAnnotations;
+    if (annotations) {
+      return annotations[0].description;
+    } else {
+      return 'No text found';
+    }
+  } catch (error) {
+    console.error('Error during OCR request:', error);
+    throw new Error('OCR 요청 중 오류가 발생했습니다.');
+  }
+}
+
+app.post('/api/upload-image', upload.single('image'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: '이미지가 업로드되지 않았습니다.' });
+  }
+
+  try {
+    const text = await detectTextFromImage(req.file.buffer);
+
+    res.status(200).json({
+      detectedText: text,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'OCR 처리 중 오류가 발생했습니다.' });
+  }
+});
+
+const uploadDirectory = 'uploads/';
+if (!fs.existsSync(uploadDirectory)) {
+  fs.mkdirSync(uploadDirectory);
+}
+
+const diskStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDirectory); 
+  },
+  filename: (req, file, cb) => {
+    const fileExtension = path.extname(file.originalname);
+    const fileName = Date.now() + fileExtension; 
+    cb(null, fileName);
+  },
+});
+
+const diskUpload = multer({ storage: diskStorage });
+
+app.post('/api/save-image', diskUpload.single('image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: '이미지가 업로드되지 않았습니다.' });
+  }
+
+  const filePath = path.join(uploadDirectory, req.file.filename);
+  
+  res.status(200).json({
+    message: '이미지가 성공적으로 저장되었습니다.',
+    savedFilePath: filePath, 
+  });
+}); 
 
 app.listen(port, () => console.log(`Server is running on port ${port}`))
