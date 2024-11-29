@@ -1,8 +1,8 @@
 const form = document.getElementById("purchase");
 
 const updateTotalPrice = (productElement) => {
-  const productPrice = parseFloat(productElement.querySelector(".product-price").value) || 0;
-  const quantity = parseFloat(productElement.querySelector(".quantity").value) || 0;
+  const productPrice = parseFloat(productElement.querySelector(".product-price").value.replace(/,/g, '')) || 0;
+  const quantity = parseFloat(productElement.querySelector(".quantity").value.replace(/,/g, '')) || 0;
   const totalPriceField = productElement.querySelector(".total-price");
 
   const totalPrice = productPrice * quantity;
@@ -53,41 +53,63 @@ const productsContainer = document.getElementById("products-container");
 const products = document.querySelectorAll("#products-container .product");
 products.forEach((product) => attachListenersToProduct(product));
 
-const addNewProduct = () => {
-  const productHTML = `
-    <div class="product">
-      <div class="form-row">
-        <label for="product-name">상품명</label>
-        <input type="text" class="product-name" required>
-      </div>
-      <div class="form-row">
-        <label for="product-price">단가</label>
-        <input type="text" class="product-price" required>
-      </div>
-      <div class="form-row">
-        <label for="quantity">수량</label>
-        <input type="text" class="quantity" required>
-      </div>
-      <div class="form-row">
-        <label for="total-price">금액</label>
-        <input type="text" class="total-price" required readonly>
-      </div>
-      <div class="form-row">
-        <label for="reserved-quantity">미송 수량</label>
-        <input type="text" class="reserved-quantity" required>
-      </div>
-      <button class="delete">×</button>
-    </div>
-  `;
+const addNewProduct = (item = null) => {
+  const existingEmptyProduct = Array.from(
+    document.querySelectorAll("#products-container .product")
+  ).find((product) => {
+    const productName = product.querySelector(".product-name").value.trim();
+    const productPrice = product.querySelector(".product-price").value.trim();
+    const quantity = product.querySelector(".quantity").value.trim();
+    return !productName && !productPrice && !quantity; 
+  });
 
-  const tempDiv = document.createElement("div");
-  tempDiv.innerHTML = productHTML;
-  const newProduct = tempDiv.firstElementChild;
+  let productElement;
 
-  attachListenersToProduct(newProduct);
+  if (existingEmptyProduct) {
+    productElement = existingEmptyProduct;
+  } else {
+    const productHTML = `
+      <div class="product">
+        <div class="form-row">
+          <label for="product-name">상품명</label>
+          <input type="text" class="product-name" required>
+        </div>
+        <div class="form-row">
+          <label for="product-price">단가</label>
+          <input type="text" class="product-price" required>
+        </div>
+        <div class="form-row">
+          <label for="quantity">수량</label>
+          <input type="text" class="quantity" required>
+        </div>
+        <div class="form-row">
+          <label for="total-price">금액</label>
+          <input type="text" class="total-price" required readonly>
+        </div>
+        <div class="form-row">
+          <label for="reserved-quantity">미송 수량</label>
+          <input type="text" class="reserved-quantity" required>
+        </div>
+        <button class="delete">×</button>
+      </div>
+    `;
 
-  const addButton = document.getElementById("add");
-  productsContainer.insertBefore(newProduct, addButton);
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = productHTML;
+    productElement = tempDiv.firstElementChild;
+
+    const addButton = document.getElementById("add");
+    productsContainer.insertBefore(productElement, addButton);
+    attachListenersToProduct(productElement); 
+  }
+
+  if (item) {
+    productElement.querySelector(".product-name").value = item.productName;
+    productElement.querySelector(".product-price").value = item.productPrice;
+    productElement.querySelector(".quantity").value = item.quantity;
+    productElement.querySelector(".reserved-quantity").value = 0; 
+    updateTotalPrice(productElement);
+  }
 
   updateSummary();
 };
@@ -159,7 +181,94 @@ form.addEventListener("submit", async (event) => {
 });
 
 const completeButton = document.getElementById("complete");
+
 completeButton.addEventListener("click", (event) => {
   event.preventDefault();
   form.dispatchEvent(new Event("submit"));
+});
+
+function extractReceiptData(text) {
+  const data = {
+    purchaseDate: null,
+    supplierName: null,
+    items: []
+  };
+
+  const dateMatch = text.match(/\d{2}-\d{2}-\d{2}\(.*\)/);
+  if (dateMatch) {
+    const dateString = dateMatch[0].replace(/\(.*\)/, '').trim();
+    const parts = dateString.split("-");
+    const year = "20" + parts[0]; 
+    const formattedDate = `${year}-${parts[1]}-${parts[2]}`;
+    data.purchaseDate = formattedDate;
+  }
+
+  const supplierNameMatch = text.match(/\d{4}-\d{2}-\d{2}\(\)\s*\d{2}:\d{2}:\d{2}\s+([^\s]+)/);
+  if (supplierNameMatch) {
+    data.supplierName = supplierNameMatch[1]; 
+  }
+
+  const itemRegex = /([가-힣A-Za-z0-9/]+)\s+(\d{1,3}(?:,\d{3})*)\s+(\d+)\s+(\d{1,3}(?:,\d{3})*)/g;
+  let match;
+  while ((match = itemRegex.exec(text)) !== null) {
+    const product = {
+      productName: match[1],     
+      productPrice: match[2],    
+      quantity: match[3],        
+      totalPrice: match[4]       
+    };
+    data.items.push(product);
+  }
+
+  return data;
+}
+
+const uploadForm = document.getElementById('uploadForm');
+
+uploadForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+
+  const formData = new FormData();
+  const fileInput = document.getElementById('imageInput');
+  formData.append('image', fileInput.files[0]);
+
+  try {
+    const response = await fetch('http://localhost:3000/api/upload-image', {
+      method: 'POST',
+      body: formData,
+    });
+    const data = await response.json();
+
+    if (response.ok) {
+      console.log(extractReceiptData(data.detectedText))
+
+      const receiptData = extractReceiptData(data.detectedText);
+      document.getElementById('supplier-name').value = receiptData.supplierName; 
+      document.getElementById('purchase-date').value = receiptData.purchaseDate; 
+
+      receiptData.items.forEach(item => {
+        addNewProduct(item); 
+
+        const lastProduct = document.querySelector("#products-container .product:last-child");
+        if (!lastProduct) {
+          console.error("새로 추가된 제품을 찾을 수 없음");
+          return;
+        }
+
+        lastProduct = document.querySelector("#products-container .product:last-child");
+        lastProduct.querySelector(".product-name").value = item.productName;
+        lastProduct.querySelector(".product-price").value = item.productPrice;
+        lastProduct.querySelector(".quantity").value = item.quantity;
+        lastProduct.querySelector(".reserved-quantity").value = 0; 
+        updateTotalPrice(lastProduct);
+        console.log(item.productName)
+        console.log(item.productPrice)
+      });
+    } else {
+      alert(`오류: ${data.message}`);
+    }
+  } catch (error) {
+    console.error(error)
+    alert('업로드 중 오류가 발생했습니다.');
+  }
 });
