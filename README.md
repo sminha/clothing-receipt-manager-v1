@@ -1,1 +1,1 @@
-# ojang
+# clothing-receipt-manager
